@@ -1,26 +1,11 @@
-local zoneLocation, zoneRadius, pedLocation = lib.callback.await('km_scrapyard:server:location')
-
-function loadModel(model)
-    RequestModel(model)
-    while not HasModelLoaded(model) do
-        Citizen.Wait(1)
-        RequestModel(model)
-    end
-end
-
-function loadAnimDict(dict)
-    RequestAnimDict(dict)
-    while not HasAnimDictLoaded(dict) do
-        Citizen.Wait(1)
-        RequestAnimDict(dict)
-    end
-end
+local zoneLocation, zoneRadius, pedLocation
+local Ped
 
 local function GetVehiclesInZone()
     local vehicles = {}
     local nearbyVehicles = lib.getNearbyVehicles(zoneLocation, zoneRadius, true)
-    for _, vehicle in ipairs(nearbyVehicles) do
-        table.insert(vehicles, vehicle.vehicle)
+    for _, vehicleData in ipairs(nearbyVehicles) do
+        table.insert(vehicles, vehicleData.vehicle)
     end
     return vehicles
 end
@@ -33,34 +18,34 @@ local function CreateAndOpenContextMenu()
     local options = {}
     local vehiclesInZone = GetVehiclesInZone()
 
-    options.push({
+    table.insert(options, {
         title = Config.NpcContextMenu.FirstOption.Title,
         description = Config.NpcContextMenu.FirstOption.Description,
         readOnly = true
     })
 
-    for _, vehicle in vehiclesInZone do
+    for _, vehicle in ipairs(vehiclesInZone) do
         local vehiclePlate = GetVehicleNumberPlateText(vehicle)
-        local vehicleDisplayName = GetDisplayNameFromVehicleModel(GetEntityModel(vehicle))
+        local vehicleDisplayName = GetLabelText(GetDisplayNameFromVehicleModel(GetEntityModel(vehicle)))
 
-        options.push({
+        table.insert(options ,{
             title = Config.NpcContextMenu.VehicleOption.Title:gsub("${vehicleDisplayName}", vehicleDisplayName),
-            description = Config.NpcContextMenu.VehicleOptions.Description:gsub("${vehiclePlate}", vehiclePlate),
+            description = Config.NpcContextMenu.VehicleOption.Description:gsub("${vehiclePlate}", vehiclePlate),
             onSelect = function ()
                 print("Selected vehicle with plate: " .. vehiclePlate)
             end
         })
     end
 
-    if options == 0 then
-        options.push({
+    if #vehiclesInZone == 0 then
+        table.insert(options, {
             title = Config.NpcContextMenu.NoVehiclesOption.Title,
             description = Config.NpcContextMenu.NoVehiclesOption.Description,
             readOnly = true
         })
     end
 
-    options.push({
+    table.insert(options, {
         title = Config.NpcContextMenu.CloseMenuOption.Title,
         description = Config.NpcContextMenu.CloseMenuOption.Description,
         event = 'lib:closeContext',
@@ -78,17 +63,17 @@ end
 -- Function to spawn the NPC (spawn argument true = spawn the ped, false = despawn)
 local function SpawnScrapPed(spawn)
     if spawn then
-        loadModel(Config.PedModel)
+        lib.requestModel(Config.PedModel)
 
         Ped = CreatePed(4, Config.PedModel, pedLocation.x, pedLocation.y, pedLocation.z - 1.0, pedLocation.w, true, true)
         FreezeEntityPosition(Ped, true)
         SetEntityInvincible(Ped, true)
         SetBlockingOfNonTemporaryEvents(Ped, true)
 
-        exports.ox_target:addEntity(Ped, {
+        exports.ox_target:addLocalEntity(Ped, {
             {
                 distance = Config.PedTarget.InteractDistance,
-                name = 'scrap_ped_interact',
+                name = 'km_scrapyard_ped_interact',
                 label = Config.PedTarget.Label,
                 icon = Config.PedTarget.Icon,
                 onSelect = function()
@@ -98,10 +83,11 @@ local function SpawnScrapPed(spawn)
            }
         })
 
-        loadAnimDict(Config.PedAnimDict)
+        lib.requestAnimDict(Config.PedAnimDict)
         TaskPlayAnim(Ped, Config.PedAnimDict, Config.PedAnim, 2.0, 2.0, -1, 4, 0, false, false, false)
     else
         if DoesEntityExist(Ped) then
+            exports.ox_target:removeLocalEntity(Ped, 'km_scrapyard_ped_interact')
             DeletePed(Ped)
         end
 
@@ -113,6 +99,9 @@ end
 
 -- Initialization Thtread
 Citizen.CreateThread(function()
+    Wait(2000)
+    zoneLocation, zoneRadius, pedLocation = lib.callback.await('km_scrapyard:server:location', false)
+
     -- Zone Initialization
     local scrapyardZone = lib.zones.sphere({
         coords = zoneLocation,
