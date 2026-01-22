@@ -10,7 +10,30 @@ Config.PedTarget = {
     InteractDistance = 3.0
 }
 
+Config.NpcContextMenu = {
+    Title = "Scrap Dealer",
+
+    FirstOption = {
+        Title = "Select a vehicle to scrap",
+        Description = "Choose from the list below:",
+    },
+
+    VehicleOption = {
+        Title = "${vehicleDisplayName}",
+        Description = "Plate: ${vehiclePlate}",
+    },
+
+    NoVehiclesOption = {
+        Title = "No vehicles found",
+        Description = "There are no vehicles in the scrapyard zone.",
+    },
+
+    CloseMenuOption = {
+        Title = "Close",
+        Description = "Close this menu.",
+    }
+}
 
 Config.Locations = {
-    {Zone = vec3(100.0, -200.0, 20.0), Ped = vec4(100.0, -200.0, 20.0, 90.0)},
+    {Zone = vec3(100.0, -200.0, 20.0), ZoneRadius = 10.0, Ped = vec4(100.0, -200.0, 20.0, 90.0)},
 }
