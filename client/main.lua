@@ -14,13 +14,42 @@ local function buyVehicleScraping(vehicle)
     
 end
 
-local function CreateAndOpenContextMenu()
+local function CreateShopContextMenu()
+    local options = {}
+
+    for _, itemData in ipairs(Config.ScrapyardShop) do
+        table.insert(options, {
+            title = Config.NpcContextMenu.ShopMenu.ShopItemOption.Title:gsub("${itemLabel}", itemData.shopLabel),
+            description = Config.NpcContextMenu.ShopMenu.ShopItemOption.Description:gsub("${itemLabel}", itemData.shopLabel):gsub("${itemPrice}", itemData.price),
+            onSelect = function ()
+                print("Buy " .. itemData.shopLabel .. " for " .. itemData.price)
+                -- TODO: Function to buy item send itemData.item
+            end
+        })
+    end
+
+    table.insert(options, {
+        title = Config.NpcContextMenu.BackOption.Title,
+        icon = Config.NpcContextMenu.BackOption.Icon,
+        onSelect = function ()
+            lib.showContext('km_scrapyard_main_npc_menu')
+        end
+    })
+
+    lib.registerContext({
+        id = 'km_scrapyard_shop',
+        title = Config.NpcContextMenu.Title,
+        options = options
+    })
+end
+
+local function CreateScrapContextMenu()
     local options = {}
     local vehiclesInZone = GetVehiclesInZone()
 
     table.insert(options, {
-        title = Config.NpcContextMenu.FirstOption.Title,
-        description = Config.NpcContextMenu.FirstOption.Description,
+        title = Config.NpcContextMenu.ScrapVehicleMenu.FirstOption.Title,
+        description = Config.NpcContextMenu.ScrapVehicleMenu.FirstOption.Description,
         readOnly = true
     })
 
@@ -29,8 +58,8 @@ local function CreateAndOpenContextMenu()
         local vehicleDisplayName = GetLabelText(GetDisplayNameFromVehicleModel(GetEntityModel(vehicle)))
 
         table.insert(options ,{
-            title = Config.NpcContextMenu.VehicleOption.Title:gsub("${vehicleDisplayName}", vehicleDisplayName),
-            description = Config.NpcContextMenu.VehicleOption.Description:gsub("${vehiclePlate}", vehiclePlate),
+            title = Config.NpcContextMenu.ScrapVehicleMenu.VehicleOption.Title:gsub("${vehicleDisplayName}", vehicleDisplayName),
+            description = Config.NpcContextMenu.ScrapVehicleMenu.VehicleOption.Description:gsub("${vehiclePlate}", vehiclePlate),
             onSelect = function ()
                 print("Selected vehicle with plate: " .. vehiclePlate)
             end
@@ -39,25 +68,25 @@ local function CreateAndOpenContextMenu()
 
     if #vehiclesInZone == 0 then
         table.insert(options, {
-            title = Config.NpcContextMenu.NoVehiclesOption.Title,
-            description = Config.NpcContextMenu.NoVehiclesOption.Description,
+            title = Config.NpcContextMenu.ScrapVehicleMenu.NoVehiclesOption.Title,
+            description = Config.NpcContextMenu.ScrapVehicleMenu.NoVehiclesOption.Description,
             readOnly = true
         })
     end
 
     table.insert(options, {
-        title = Config.NpcContextMenu.CloseMenuOption.Title,
-        description = Config.NpcContextMenu.CloseMenuOption.Description,
-        event = 'lib:closeContext',
+        title = Config.NpcContextMenu.BackOption.Title,
+        icon = Config.NpcContextMenu.BackOption.Icon,
+        onSelect = function ()
+            lib.showContext('km_scrapyard_main_npc_menu')
+        end
     })
 
     lib.registerContext({
-        id = 'km_scrapyard_npc_menu',
+        id = 'km_scrapyard_select_vehicle_menu',
         title = Config.NpcContextMenu.Title,
         options = options
     })
-
-    lib.showContext('km_scrapyard_npc_menu')
 end
 
 -- Function to spawn the NPC (spawn argument true = spawn the ped, false = despawn)
@@ -77,8 +106,29 @@ local function SpawnScrapPed(spawn)
                 label = Config.PedTarget.Label,
                 icon = Config.PedTarget.Icon,
                 onSelect = function()
-                    print('Interacted with Scrap Dealer')
-                    CreateAndOpenContextMenu()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+                    lib.registerContext({
+                        id = 'km_scrapyard_main_npc_menu',
+                        title = Config.NpcContextMenu.Title,
+                        options = {
+                            {
+                                title = Config.NpcContextMenu.OpenShopMenu.Title,
+                                description = Config.NpcContextMenu.OpenShopMenu.Description,
+                                onSelect = function()
+                                    CreateShopContextMenu()
+                                    lib.showContext("km_scrapyard_shop")
+                                end
+                            },
+                            {
+                                title = Config.NpcContextMenu.OpenShopMenu.Title,
+                                description = Config.NpcContextMenu.OpenShopMenu.Description,
+                                onSelect = function ()
+                                    CreateScrapContextMenu()
+                                    lib.showContext('km_scrapyard_select_vehicle_menu')
+                                end
+                            }
+                        }
+                    })
+                    lib.showContext('km_scrapyard_main_npc_menu')
                 end
            }
         })

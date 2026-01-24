@@ -10,27 +10,57 @@ Config.PedTarget = {
     InteractDistance = 3.0
 }
 
+Config.ScrapyardShop = {
+    { item = "screwdriver", price = 500, shopLabel = "Screwdriver" },
+    { item = "WEAPON_WRENCH", price = 2000, shopLabel = "Wrench"},
+    { item = "WEAPON_CROWBAR", price = 3500, shopLabel = "Crowbar"}
+}
+
 Config.NpcContextMenu = {
-    Title = "Scrap Dealer",
+    Title = "Scrapyard Dealer",
 
-    FirstOption = {
-        Title = "Select a vehicle to scrap",
-        Description = "Choose from the list below:",
+    OpenShopMenu = {
+        Title = "Scrapyard Shop",
+        Description = "Buy tools for scrapping"
     },
 
-    VehicleOption = {
-        Title = "${vehicleDisplayName}",
-        Description = "Plate: ${vehiclePlate}",
+    OpenScrapVehicleMenu = {
+        Title = "Scrap Vehicle",
+        Description = "Select vehicle for scrapping"
     },
 
-    NoVehiclesOption = {
-        Title = "No vehicles found",
-        Description = "There are no vehicles in the scrapyard zone.",
+    ShopMenu = {
+        ShopItemOption = {
+            Title = "${itemLabel}",
+            Description = "Buy ${itemLabel} for $${itemPrice}"
+        }
     },
 
-    CloseMenuOption = {
-        Title = "Close",
-        Description = "Close this menu.",
+    ScrapVehicleMenu = {
+        FirstOption = {
+            Title = "Select a vehicle to scrap",
+            Description = "Choose from the list below:",
+        },
+
+        VehicleOption = {
+            Title = "${vehicleDisplayName}",
+            Description = "Plate: ${vehiclePlate}",
+        },
+
+        NoVehiclesOption = {
+            Title = "No vehicles found",
+            Description = "There are no vehicles in the scrapyard zone.",
+        },
+
+        CloseMenuOption = {
+            Title = "Close",
+            Description = "Close this menu.",
+        }
+    },
+
+    BackOption = {
+        Title = "Back",
+        Icon = "arrow-left"
     }
 }
 
