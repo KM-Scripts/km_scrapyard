@@ -22,8 +22,7 @@ local function CreateShopContextMenu()
             title = Config.NpcContextMenu.ShopMenu.ShopItemOption.Title:gsub("${itemLabel}", itemData.shopLabel),
             description = Config.NpcContextMenu.ShopMenu.ShopItemOption.Description:gsub("${itemLabel}", itemData.shopLabel):gsub("${itemPrice}", itemData.price),
             onSelect = function ()
-                print("Buy " .. itemData.shopLabel .. " for " .. itemData.price)
-                -- TODO: Function to buy item send itemData.item
+                local buyedSuccessfully = lib.callback.await('km_scrapyard:server:buyItem', false, itemData)
             end
         })
     end
@@ -61,7 +60,7 @@ local function CreateScrapContextMenu()
             title = Config.NpcContextMenu.ScrapVehicleMenu.VehicleOption.Title:gsub("${vehicleDisplayName}", vehicleDisplayName),
             description = Config.NpcContextMenu.ScrapVehicleMenu.VehicleOption.Description:gsub("${vehiclePlate}", vehiclePlate),
             onSelect = function ()
-                print("Selected vehicle with plate: " .. vehiclePlate)
+                local buyedSuccessfully = lib.callback.await('km_scrapyard:server:buyScrapping', false, vehicle)
             end
         })
     end
@@ -119,8 +118,8 @@ local function SpawnScrapPed(spawn)
                                 end
                             },
                             {
-                                title = Config.NpcContextMenu.OpenShopMenu.Title,
-                                description = Config.NpcContextMenu.OpenShopMenu.Description,
+                                title = Config.NpcContextMenu.OpenScrapVehicleMenu.Title,
+                                description = Config.NpcContextMenu.OpenScrapVehicleMenu.Description,
                                 onSelect = function ()
                                     CreateScrapContextMenu()
                                     lib.showContext('km_scrapyard_select_vehicle_menu')

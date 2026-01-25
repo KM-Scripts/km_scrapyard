@@ -33,20 +33,20 @@ lib.callback.register('km_scrapyard:server:location', function()
     return Config.Locations[spawnPoint].Zone, Config.Locations[spawnPoint].ZoneRadius ,Config.Locations[spawnPoint].Ped
 end)
 
-local buyCooldowns = {}
+local buyScrappingCooldowns = {}
 lib.callback.register("km_scrapyard:server:buyScrapping", function(source, vehicle)
-    if buyCooldowns[source] and os.time() < buyCooldowns[source] then
-        -- Notify too fast
+    if buyScrappingCooldowns[source] and os.time() < buyScrappingCooldowns[source] then
+        Notify(Config.Notify.Title, Config.Notify.YouNeedToWait, "error", 2500)
         return false
     end
 
     if not DistCheck(source, Config.Locations[spawnPoint].Ped.xyz, 5.0) then
-        -- Notify too far from NPC
+       Notify(Config.Notify.Title, Config.Notify.TooFarFromNPC, "error", 2500)
         return false
     end
 
     if not DoesEntityExist(vehicle) then
-        -- Notify vehicle dont exist
+        Notify(Config.Notify.Title, Config.Notify.VehicleDontExist, "error", 2500)
         return false
     end
 
@@ -54,20 +54,62 @@ lib.callback.register("km_scrapyard:server:buyScrapping", function(source, vehic
     local distanceFromZone = #(vehicleCoords.xyz - Config.Locations[spawnPoint].Zone.xyz)
 
     if distanceFromZone > Config.Locations[spawnPoint].ZoneRadius then
-        -- Notify vehicle not in scrapyard zone
+        Notify(Config.Notify.Title, Config.Notify.VehicleNotInScrapyard, "error", 2500)
         return false
     end
 
-    buyCooldowns[source] = os.time() + 1
+    buyScrappingCooldowns[source] = os.time() + 1
 
-    local cost = 250 -- TODO: Make this in config some way...
+    local price = 250 -- TODO: Make this in config some way...
     local money = exports.ox_inventory:GetItem(source, 'money', false) -- TODO: Config for payment item (money, black_money...)
 
-    if not money or money.count < cost then
-        -- Notify not enough money
+    if not money or money.count < price then
+        Notify(Config.Notify.Title, Config.Notify.NotEnoughMoney, "error", 2500)
         return false
     end
 
-    exports.ox_inventory:RemoveItem(source, 'money', cost) -- TODO: the same config item...
+    exports.ox_inventory:RemoveItem(source, 'money', price) -- TODO: the same config item...
     return true
+end)
+
+local buyItemCooldown = {}
+lib.callback.register("km_scrapyard:server:buyItem", function(source, itemData)
+    if buyItemCooldown[source] and os.time() < buyItemCooldown[source] then
+        Notify(Config.Notify.Title, Config.Notify.YouNeedToWait, "error", 2500)
+        return false
+    end
+
+    if not DistCheck(source, Config.Locations[spawnPoint].Ped.xyz, 5.0) then
+        Notify(Config.Notify.Title, Config.Notify.TooFarFromNPC, "error", 2500)
+        return false
+    end
+
+    local canBeItemBought = false
+    for _, itemDataf in ipairs(Config.ScrapyardShop) do
+        if itemDataf == itemData then
+            canBeItemBought = true
+            break
+        end
+    end
+    if not canBeItemBought then
+        Notify(Config.Notify.Title, Config.Notify.NotSellingItem, "error", 2500)
+        return false
+    end
+
+    buyScrappingCooldowns[source] = os.time() + 1
+    local price = itemData.price
+    local money = exports.ox_inventory:GetItem(source, 'money', false) -- TODO: Add config for payment method item
+
+    if not money or money < price then
+        return false
+    end
+
+    exports.ox_inventory:RemoveItem(source, 'money', price)
+    exports.ox_inventory:AddItem(source, itemData.item, 1)
+    return true
+end)
+
+AddEventHandler('playerDropped', function ()
+    local source = source
+    buyScrappingCooldowns[source] = nil
 end)

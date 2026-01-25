@@ -68,3 +68,14 @@ Config.Locations = {
     {Zone = vec3(1563.6631, -2163.8687, 77.5299), ZoneRadius = 50.0, Ped = vec4(1553.6616, -2177.4434, 77.3225, 267.4076)},
     {Zone = vec3(1563.6631, -2163.8687, 77.5299), ZoneRadius = 50.0, Ped = vec4(1567.4507, -2179.2358, 77.4686, 59.2518)},
 }
+
+Config.Notify = {
+    Title = "SCRAPYARD",
+    YouNeedToWait = "You need to wait before buying that again!",
+    TooFarFromNPC = "You are too far from the dealer to do this!",
+    VehicleDontExist = "The vehicle you are trying to scrap dont exist!",
+    VehicleNotInScrapyard = "The vehicle you are trying to scrap is not in the scrapyard zone!",
+    NotEnoughMoney = "You dont have enough money to buy this!",
+    NotSellingItem = "Dealer is not selling that item!!!"
+    
+}
